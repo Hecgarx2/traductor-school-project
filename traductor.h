@@ -10,6 +10,8 @@ using namespace std;
 void leerLineas(Tabcop tabcop[], string &cadenaFinal);
 void leerCampos(Tabcop tabcop[], string &cadenaFinal, string &linea);
 void saltarEtiqueta(string &nombreDato);
+void escribirTABSIM(string direccionMemoria);
+string leerTABSIM(Tabcop tabcop[], int indice);
 int buscarInstruccion(Tabcop tabcop[], string nombreDato);
 void buscarDireccionamiento(Tabcop tabcop[], string nombreDat, int indice, string linea);
 
@@ -25,7 +27,7 @@ void leerLineas(Tabcop tabcop[], string &cadenaFinal){
 }
 
 void leerCampos(Tabcop tabcop[], string &cadenaFinal, string &linea){
-    string nombreDato;
+    string nombreDato, memoria;
     bool existeDireccionamiento = false;
     int posInicialDato = 0, posFinalDato, indice, indiceMnemonico;
     while (posInicialDato != linea.size()){
@@ -37,7 +39,10 @@ void leerCampos(Tabcop tabcop[], string &cadenaFinal, string &linea){
         saltarEtiqueta(nombreDato);
         if (nombreDato == "ORG"){
             cout<<linea<<endl;
+            posInicialDato = posFinalDato+2;
             posFinalDato = linea.size();
+            nombreDato = linea.substr(posInicialDato, posFinalDato);
+            escribirTABSIM(nombreDato);
         }
         
         if (!existeDireccionamiento){
@@ -53,7 +58,8 @@ void leerCampos(Tabcop tabcop[], string &cadenaFinal, string &linea){
                 existeDireccionamiento = true;
             }
             else{
-                cout<<linea<<'\t'<<tabcop[indice].getCodigoInstruccion()<<endl;
+                memoria = leerTABSIM(tabcop, indice);
+                cout<<linea<<'\t'<<memoria<<" "<<tabcop[indice].getCodigoInstruccion()<<endl;
             }
         }
         
@@ -73,6 +79,36 @@ void saltarEtiqueta(string &nombreDato){
     }
 }
 
+void escribirTABSIM(string direccionMemoria){
+    ofstream archivoTabsim;
+    archivoTabsim.open(archivoTABSIM, ios::app);
+    if (archivoTabsim.is_open()){
+        archivoTabsim<<direccionMemoria<<endl;
+        archivoTabsim.close();
+    }
+}
+
+string leerTABSIM(Tabcop tabcop[], int indice){
+    ifstream archivoTabsim;
+    string texto, cadenaMemoria, cadena;
+    int memoria;
+    archivoTabsim.open(archivoTABSIM, ios::in);
+    if (archivoTabsim.is_open()){
+        while (!archivoTabsim.eof()){
+            getline(archivoTabsim,cadena);
+            texto += cadena;
+        }
+        texto = texto.substr(texto.size() - 4, texto.size());
+        memoria = stoi(texto);
+        memoria = memoria + tabcop[indice].getLongitudInstruccion();
+        cadenaMemoria = to_string(memoria);
+        escribirTABSIM(cadenaMemoria);
+        archivoTabsim.close();
+        return cadenaMemoria;
+    }
+    return "nel"; 
+}
+
 int buscarInstruccion(Tabcop tabcop[], string nombreDato){
     for (int i = 0; i < cantidadMnemonicos; i++){
         if (nombreDato == tabcop[i].getMnemonico()){
@@ -84,10 +120,12 @@ int buscarInstruccion(Tabcop tabcop[], string nombreDato){
 
 void buscarDireccionamiento(Tabcop tabcop[], string nombreDato, int indice, string linea){
     int limite = indice + tabcop[indice].getCantidadInstrucciones(), codigo;
+    string memoria;
     if (nombreDato[0] == '#'){
         for (int i = indice; i < limite; i++){
             if ("IMM" == tabcop[i].getDireccionamiento()){
-                cout<<linea<<'\t'<<tabcop[i].getCodigoInstruccion()<<endl;
+                memoria = leerTABSIM(tabcop, indice);
+                cout<<linea<<'\t'<<memoria<<" "<<tabcop[i].getCodigoInstruccion()<<endl;
             }
         }
     }
@@ -96,14 +134,16 @@ void buscarDireccionamiento(Tabcop tabcop[], string nombreDato, int indice, stri
         if (codigo < limiteDecimalOrp8){
             for (int i = indice; i < limite; i++){
                 if ("DIR" == tabcop[i].getDireccionamiento()){
-                    cout<<linea<<'\t'<<tabcop[i].getCodigoInstruccion()<<endl;
+                    memoria = leerTABSIM(tabcop, indice);
+                    cout<<linea<<'\t'<<memoria<<" "<<tabcop[i].getCodigoInstruccion()<<endl;
                 }
             }
         }
         else if (codigo < limiteDecimalOrp16){
             for (int i = indice; i < limite; i++){
                 if ("EXT" == tabcop[i].getDireccionamiento()){
-                    cout<<linea<<'\t'<<tabcop[i].getCodigoInstruccion()<<endl;
+                    memoria = leerTABSIM(tabcop, indice);
+                    cout<<linea<<'\t'<<memoria<<" "<<tabcop[i].getCodigoInstruccion()<<endl;
                 }
             }
         }
