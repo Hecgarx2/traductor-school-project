@@ -4,6 +4,7 @@
 #include <string>
 #include "definiciones.h"
 #include "tabcop.h"
+#include "conversor.h"
 
 using namespace std;
 
@@ -15,7 +16,7 @@ string leerTABSIM(Tabcop tabcop[], int indice, bool existeInstruccion);
 int buscarInstruccion(Tabcop tabcop[], string nombreDato);
 void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, string linea, string &cadenaModificada, string &dirMemoria);
 void verificarPalabraReservada(string nombreDato, string &dirMemoria, string &cadenaModificada, string linea);
-void validarSistemaNumeracion(string &nombreDato, string &cadenaModificada);
+void validarSistemaNumeracion(string &nombreDato, string &cadenaModificada, string &numCodigo);
 
 void leerLineas(Tabcop tabcop[], string &cadenaFinal){
     string linea, cadenaModificada, memoria = "0000";
@@ -147,6 +148,7 @@ int buscarInstruccion(Tabcop tabcop[], string nombreDato){
 
 void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, string linea, string &cadenaModificada, string &dirMemoria){
     int limite = indice + tabcop[indice].getCantidadInstrucciones(), codigo, memoria, posInicial = 0, posFinal;
+    string numCodigo;
     if (nombreDato[0] == '#'){
         for (int i = indice; i < limite; i++){
             if ("IMM" == tabcop[i].getDireccionamiento()){
@@ -157,12 +159,13 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
 
                 posFinal = nombreDato.size();
                 nombreDato = nombreDato.substr(posInicial+1, posFinal);
-                validarSistemaNumeracion(nombreDato, cadenaModificada);
+                validarSistemaNumeracion(nombreDato, cadenaModificada, numCodigo);
+                cadenaModificada += numCodigo+'\n';
             }
         }
     }
     else{
-        validarSistemaNumeracion(nombreDato, cadenaModificada);
+        validarSistemaNumeracion(nombreDato, cadenaModificada, numCodigo);
         codigo = stoi(nombreDato);
         if (codigo < limiteDecimalOrp8){
             for (int i = indice; i < limite; i++){
@@ -171,6 +174,7 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
                     memoria = stoi(dirMemoria);
                     memoria = memoria + tabcop[i].getLongitudInstruccion();
                     dirMemoria = to_string(memoria);
+                    cadenaModificada += numCodigo+'\n';
                 }
             }
         }
@@ -181,6 +185,7 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
                     memoria = stoi(dirMemoria);
                     memoria = memoria + tabcop[i].getLongitudInstruccion();
                     dirMemoria = to_string(memoria);
+                    cadenaModificada += numCodigo+'\n';
                 }
             }
         }
@@ -191,11 +196,9 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
 
 }
 
-void validarSistemaNumeracion(string &nombreDato, string &cadenaModificada){
-    int posInicial = 0, posFinal;
+void validarSistemaNumeracion(string &nombreDato, string &cadenaModificada, string &numCodigo){
+    int posInicial = 0, posFinal, numero;
     if (nombreDato[0] == simboloHexadecimal){
-        cadenaModificada += "Hexadecimal\n";
-        
         posFinal = nombreDato.size();
         nombreDato = nombreDato.substr(posInicial+1, posFinal);
 
@@ -213,7 +216,8 @@ void validarSistemaNumeracion(string &nombreDato, string &cadenaModificada){
         nombreDato = nombreDato.substr(posInicial+1, posFinal);
     }
     else{
-        cadenaModificada += "Decimal\n";
+        numero = stoi(nombreDato);
+        numCodigo = decimalAHexa(numero);
     }
 }
 
