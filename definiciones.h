@@ -6,7 +6,10 @@
 #define delimitadorLinea '\n'
 #define delimitadorCampoTABCOP '|'
 #define delimitadorCampoP ' '
-#define dobleTab "\t\t"
+#define delimitadorEtiqueta '\t'
+#define simboloHexadecimal '$'
+#define simboloOctal '@'
+#define simboloBinario '%'
 #define limiteDecimalOrp8 255
 #define limiteDecimalOrp16 65535
 const int cantidadMnemonicos = 16;

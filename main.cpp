@@ -54,7 +54,9 @@ int main(int argc, char const *argv[])
 
     cargarTabcop(tabcop);
     cargarArchivo(cadenaFinal);
+    cout<<"Archivo orginal:\n"<<cadenaFinal;
     leerLineas(tabcop,cadenaFinal);
+    cout<<"Archivo modificado:\n"<<cadenaFinal;
     return 0;
 }
 
