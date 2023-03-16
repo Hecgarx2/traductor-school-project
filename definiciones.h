@@ -12,7 +12,7 @@
 #define simboloBinario '%'
 #define limiteDecimalOrp8 255
 #define limiteDecimalOrp16 65535
-const int cantidadMnemonicos = 16;
+const int cantidadMnemonicos = 33;
 
 #include <iostream>
 

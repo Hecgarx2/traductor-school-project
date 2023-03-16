@@ -36,7 +36,7 @@ Tabcop::Tabcop(string mnemonico, string direccionamiento, int longInstruccion, s
 
 Tabcop::Tabcop(string mnemonico){
     string subCadena;
-    int posInicial = 0, posFinal, contDelimitador = 0;
+    int posInicial = 0, posFinal = 0, contDelimitador = 0;
     while (posFinal < mnemonico.length()){
         posFinal = mnemonico.find_first_of(delimitadorCampoTABCOP, posInicial);
         subCadena = mnemonico.substr(posInicial, posFinal-posInicial);

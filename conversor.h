@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+#include <math.h>
 
 using namespace std;
 
@@ -45,5 +46,6 @@ string decimalAHexa(int decimal){
     reverse(numHexa.begin(), numHexa.end());
     return numHexa;
 }
+
 
 #endif 

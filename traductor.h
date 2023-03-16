@@ -58,8 +58,10 @@ void leerCampos(Tabcop tabcop[], string &cadenaModificada, string &linea, string
                 existeDireccionamiento = true;
             }
             else{
+                dirMemoria = stoi(memoria,0,10);
+                memoria = decimalAHexa(dirMemoria);
                 cadenaModificada += linea+'\t'+memoria+" "+tabcop[indice].getCodigoInstruccion()+'\n';
-                dirMemoria = stoi(memoria);
+                dirMemoria = stoi(memoria,0,16);
                 dirMemoria = dirMemoria + tabcop[indice].getLongitudInstruccion();
                 memoria = to_string(dirMemoria);
             }
@@ -75,15 +77,17 @@ void leerCampos(Tabcop tabcop[], string &cadenaModificada, string &linea, string
 }
 
 void saltarEtiqueta(string &nombreDato, string dirMemoria){
-    int posInicial = 0, posFinal;
-    string etiqueta;
+    int posInicial = 0, posFinal, memoria; 
+    string etiqueta, direccion;
     if (nombreDato[posInicial] == '\t'){
         nombreDato = nombreDato.substr(posInicial+1, nombreDato.size()-1 );
     }
     else{
         posFinal = nombreDato.find_first_of(delimitadorEtiqueta, posInicial);
         etiqueta = nombreDato.substr(posInicial, posFinal);
-        etiqueta += " "+dirMemoria;
+        memoria = stoi(dirMemoria);
+        direccion = decimalAHexa(memoria);
+        etiqueta += " "+direccion;
         escribirTABSIM(etiqueta);
         posInicial = posFinal+1;
         posFinal = nombreDato.size();
@@ -92,15 +96,18 @@ void saltarEtiqueta(string &nombreDato, string dirMemoria){
 }
 
 void verificarPalabraReservada(string nombreDato, string &dirMemoria, string &cadenaModificada, string linea){
-    int posInicialDato = 0, posFinalDato = linea.find_first_of(simboloHexadecimal, posInicialDato);
+    int posInicialDato = 0, posFinalDato = linea.find_first_of(simboloHexadecimal, posInicialDato),dirMemory;
     if (nombreDato == "ORG"){
             cadenaModificada += linea+delimitadorLinea;
             posInicialDato = posFinalDato+1;
             posFinalDato = linea.size();
             nombreDato = linea.substr(posInicialDato, posFinalDato);
-            dirMemoria = nombreDato;
+            dirMemory = stoi(nombreDato,0,16);
+            dirMemoria = to_string(dirMemory);
     }
     else if (nombreDato == "END"){
+        dirMemory = stoi(dirMemoria);
+        dirMemoria = decimalAHexa(dirMemory);
         cadenaModificada += linea+'\t'+dirMemoria;
     }
 }
@@ -152,11 +159,12 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
     if (nombreDato[0] == '#'){
         for (int i = indice; i < limite; i++){
             if ("IMM" == tabcop[i].getDireccionamiento()){
-                cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
                 memoria = stoi(dirMemoria);
+                dirMemoria = decimalAHexa(memoria);
+                cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                memoria = stoi(dirMemoria,0,16);
                 memoria = memoria + tabcop[i].getLongitudInstruccion();
                 dirMemoria = to_string(memoria);
-
                 posFinal = nombreDato.size();
                 nombreDato = nombreDato.substr(posInicial+1, posFinal);
                 validarSistemaNumeracion(nombreDato, cadenaModificada, numCodigo);
@@ -170,10 +178,14 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
         if (codigo < limiteDecimalOrp8){
             for (int i = indice; i < limite; i++){
                 if ("DIR" == tabcop[i].getDireccionamiento()){
-                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
                     memoria = stoi(dirMemoria);
+                    dirMemoria = decimalAHexa(memoria);
+                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                     memoria = stoi(dirMemoria,0,16);
                     memoria = memoria + tabcop[i].getLongitudInstruccion();
                     dirMemoria = to_string(memoria);
+                    posFinal = nombreDato.size();
+                    nombreDato = nombreDato.substr(posInicial+1, posFinal);
                     cadenaModificada += numCodigo+'\n';
                 }
             }
@@ -181,10 +193,14 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
         else if (codigo < limiteDecimalOrp16){
             for (int i = indice; i < limite; i++){
                 if ("EXT" == tabcop[i].getDireccionamiento()){
-                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
                     memoria = stoi(dirMemoria);
+                    dirMemoria = decimalAHexa(memoria);
+                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                     memoria = stoi(dirMemoria,0,16);
                     memoria = memoria + tabcop[i].getLongitudInstruccion();
                     dirMemoria = to_string(memoria);
+                    posFinal = nombreDato.size();
+                    nombreDato = nombreDato.substr(posInicial+1, posFinal);
                     cadenaModificada += numCodigo+'\n';
                 }
             }
@@ -197,23 +213,23 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
 }
 
 void validarSistemaNumeracion(string &nombreDato, string &cadenaModificada, string &numCodigo){
-    int posInicial = 0, posFinal, numero;
+    int posInicial = 0, posFinal, numero, decimal;
     if (nombreDato[0] == simboloHexadecimal){
         posFinal = nombreDato.size();
         nombreDato = nombreDato.substr(posInicial+1, posFinal);
 
     }
     else if (nombreDato[0] == simboloOctal){
-        cadenaModificada += "Octal\n";
-        
         posFinal = nombreDato.size();
         nombreDato = nombreDato.substr(posInicial+1, posFinal);
+        decimal = stoi(nombreDato,0,8);
+        numCodigo = decimalAHexa(decimal);
     }
     else if (nombreDato[0] == simboloBinario){
-        cadenaModificada += "Binario\n";
-        
         posFinal = nombreDato.size();
         nombreDato = nombreDato.substr(posInicial+1, posFinal);
+        decimal = stoi(nombreDato,0,2);  //Traduce de binario a decimal
+        numCodigo = decimalAHexa(decimal);
     }
     else{
         numero = stoi(nombreDato);
