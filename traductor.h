@@ -17,6 +17,7 @@ int buscarInstruccion(Tabcop tabcop[], string nombreDato);
 void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, string linea, string &cadenaModificada, string &dirMemoria);
 void verificarPalabraReservada(string nombreDato, string &dirMemoria, string &cadenaModificada, string linea);
 void validarSistemaNumeracion(string &nombreDato, string &cadenaModificada, string &numCodigo);
+void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModificada, string numCodigo);
 
 void leerLineas(Tabcop tabcop[], string &cadenaFinal){
     string linea, cadenaModificada, memoria = "0000";
@@ -168,7 +169,7 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
                 posFinal = nombreDato.size();
                 nombreDato = nombreDato.substr(posInicial+1, posFinal);
                 validarSistemaNumeracion(nombreDato, cadenaModificada, numCodigo);
-                cadenaModificada += numCodigo+'\n';
+                escribrirCodigoInstruccion(tabcop, i, cadenaModificada, numCodigo);
             }
         }
     }
@@ -181,12 +182,12 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
                     memoria = stoi(dirMemoria);
                     dirMemoria = decimalAHexa(memoria);
                     cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
-                     memoria = stoi(dirMemoria,0,16);
+                    memoria = stoi(dirMemoria,0,16);
                     memoria = memoria + tabcop[i].getLongitudInstruccion();
                     dirMemoria = to_string(memoria);
                     posFinal = nombreDato.size();
                     nombreDato = nombreDato.substr(posInicial+1, posFinal);
-                    cadenaModificada += numCodigo+'\n';
+                    escribrirCodigoInstruccion(tabcop, i, cadenaModificada, numCodigo);
                 }
             }
         }
@@ -196,12 +197,12 @@ void buscarDireccionamiento(Tabcop tabcop[], string &nombreDato, int indice, str
                     memoria = stoi(dirMemoria);
                     dirMemoria = decimalAHexa(memoria);
                     cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
-                     memoria = stoi(dirMemoria,0,16);
+                    memoria = stoi(dirMemoria,0,16);
                     memoria = memoria + tabcop[i].getLongitudInstruccion();
                     dirMemoria = to_string(memoria);
                     posFinal = nombreDato.size();
                     nombreDato = nombreDato.substr(posInicial+1, posFinal);
-                    cadenaModificada += numCodigo+'\n';
+                    escribrirCodigoInstruccion(tabcop, i, cadenaModificada, numCodigo);
                 }
             }
         }
@@ -234,6 +235,23 @@ void validarSistemaNumeracion(string &nombreDato, string &cadenaModificada, stri
     else{
         numero = stoi(nombreDato);
         numCodigo = decimalAHexa(numero);
+    }
+}
+
+void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModificada, string numCodigo){
+    int espacios = tabcop[indice].getLongitudInstruccion() * 2;
+    int longCodigo = tabcop[indice].getCodigoInstruccion().length();
+    int longNumCod = numCodigo.length();
+    espacios =  espacios - longCodigo - longNumCod;
+    if (espacios < 0){
+        cadenaModificada += '\t'+"FDR"+'\n';
+    }
+    else{
+        while (espacios > 0){
+            cadenaModificada += '0';
+            espacios--;
+        }
+        cadenaModificada += numCodigo + '\n';
     }
 }
 
