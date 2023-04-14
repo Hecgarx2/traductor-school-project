@@ -47,5 +47,4 @@ string decimalAHexa(int decimal){
     return numHexa;
 }
 
-
 #endif 
