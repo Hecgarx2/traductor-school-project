@@ -14,5 +14,4 @@
 #define limiteDecimalOrp16 65535
 const int cantidadMnemonicos = 35;
 
-
 #endif
