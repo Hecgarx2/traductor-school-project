@@ -4,15 +4,17 @@
 #include <string>
 #include "definiciones.h"
 #include "tabcop.h"
+#include "etiqueta.h"
 #include "conversor.h"
 
 using namespace std;
+
+Etiqueta etiquetas[cantidadEtiquetas];
 
 void leerLineas(Tabcop tabcop[], string &cadenaFinal);
 void leerCampos(Tabcop tabcop[], string &cadenaModificada, string &linea, string &memoria);
 bool existeEtiqueta(string &subCadena, string dirMemoria);
 void escribirTABSIM(string etiqueta);
-string leerTABSIM(Tabcop tabcop[], int indice, bool existeInstruccion);
 int buscarInstruccion(Tabcop tabcop[], string subCadena);
 void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, string linea, string &cadenaModificada, string &dirMemoria, bool &espMemoria, bool etiqueta);
 void verificarPalabraReservada(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialDato, bool &espMemoria, bool etiqueta);
@@ -60,19 +62,24 @@ void leerCampos(Tabcop tabcop[], string &cadenaModificada, string &linea, string
             buscarDireccionamiento(tabcop, subCadena, indice, linea, cadenaModificada, memoria, espMemoria, etiqueta);
         }
     }
+    if (etiqueta){       
+        contEtiquetas++;
+    }
 }
 
 bool existeEtiqueta(string &subCadena, string dirMemoria){
     int posInicial = 0, posFinal, memoria; 
-    string etiqueta, direccion;
+    string nomEtiqueta, direccion;
     if (subCadena[posInicial] == '\t'){
         subCadena = subCadena.substr(posInicial+1, subCadena.size()-1 );
         return false;
     }
     else{
         posFinal = subCadena.find_first_of(delimitadorEtiqueta, posInicial);
-        etiqueta = subCadena.substr(posInicial, posFinal);
-        escribirTABSIM(etiqueta+' ');
+        nomEtiqueta = subCadena.substr(posInicial, posFinal);
+        Etiqueta etiquetaAux(nomEtiqueta);
+        etiquetas[contEtiquetas] = etiquetaAux;
+        escribirTABSIM(nomEtiqueta+' ');
         posInicial = posFinal+1;
         posFinal = subCadena.size();
         subCadena = subCadena.substr(posInicial, posFinal);
@@ -92,6 +99,7 @@ void verificarPalabraReservada(string subCadena, string &dirMemoria, string &cad
         dirMemoria = to_string(dirMemory);
         posInicialDato = linea.size();
         if (!espMemoria && etiqueta){
+            etiquetas[contEtiquetas].setMemoria(dirMemoria);
             dirMemoria += '\n';
             escribirTABSIM(dirMemoria);
         }
@@ -101,6 +109,7 @@ void verificarPalabraReservada(string subCadena, string &dirMemoria, string &cad
         dirMemoria = decimalAHexa(dirMemory);
         cadenaModificada += linea+'\t'+dirMemoria;
         if (!espMemoria && etiqueta){
+            etiquetas[contEtiquetas].setMemoria(dirMemoria);
             dirMemoria += '\n';
             escribirTABSIM(dirMemoria);
         }
@@ -111,6 +120,7 @@ void verificarPalabraReservada(string subCadena, string &dirMemoria, string &cad
         posFinalDato = linea.size();
         subCadena = linea.substr(posIniDato+1, posFinalDato);
         validarSistemaNumeracion(subCadena, cadenaModificada, subCadena);
+        etiquetas[contEtiquetas].setMemoria(subCadena);
         subCadena += '\n';
         escribirTABSIM(subCadena);
         espMemoria = true;
@@ -124,29 +134,6 @@ void escribirTABSIM(string etiqueta){
         archivoTabsim<<etiqueta;
         archivoTabsim.close();
     }
-}
-
-string leerTABSIM(Tabcop tabcop[], int indice, bool existeInstruccion){
-    ifstream archivoTabsim;
-    string texto, cadenaMemoria, cadena;
-    int memoria;
-    archivoTabsim.open(archivoTABSIM, ios::in);
-    if (archivoTabsim.is_open()){
-        while (!archivoTabsim.eof()){
-            getline(archivoTabsim,cadena);
-            texto += cadena;
-        }
-        texto = texto.substr(texto.size() - 4, texto.size());
-        if (existeInstruccion){
-            memoria = stoi(texto);
-            memoria = memoria + tabcop[indice].getLongitudInstruccion();
-            cadenaMemoria = to_string(memoria);
-            escribirTABSIM(cadenaMemoria);
-        }
-        archivoTabsim.close();
-        return texto;
-    }
-    return ""; 
 }
 
 int buscarInstruccion(Tabcop tabcop[], string subCadena){
