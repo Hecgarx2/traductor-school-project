@@ -1,6 +1,6 @@
 #ifndef DEFINICIONES_H_INCLUDED
 #define DEFINICIONES_H_INCLUDED
-#define nombreArchivo "P5.asm"
+#define nombreArchivo "Directivas.asm"
 #define archivoTABCOP "TABCOP.txt"
 #define archivoTABSIM "TABSIM.txt"
 #define delimitadorLinea '\n'

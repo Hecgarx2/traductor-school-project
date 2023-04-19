@@ -13,12 +13,12 @@ Etiqueta etiquetas[cantidadEtiquetas];
 
 void leerLineas(Tabcop tabcop[], string &cadenaFinal);
 void leerCampos(Tabcop tabcop[], string &cadenaModificada, string &linea, string &memoria);
-bool existeEtiqueta(string &subCadena, string dirMemoria);
+bool existeEtiqueta(string &subCadena, string linea);
 void escribirTABSIM(string etiqueta);
 int buscarInstruccion(Tabcop tabcop[], string subCadena);
 void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, string linea, string &cadenaModificada, string &dirMemoria, bool &espMemoria, bool etiqueta);
-void verificarPalabraReservada(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialDato, bool &espMemoria, bool etiqueta);
-void validarSistemaNumeracion(string &subCadena, string &cadenaModificada, string &numCodigo);
+void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialDato, bool &espMemoria, bool etiqueta);
+void validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModificada, string &numCodigo);
 void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModificada, string numCodigo);
 
 void leerLineas(Tabcop tabcop[], string &cadenaFinal){
@@ -43,12 +43,12 @@ void leerCampos(Tabcop tabcop[], string &cadenaModificada, string &linea, string
     }
     subCadena = linea.substr(posInicialDato, posFinalDato);
     
-    etiqueta = existeEtiqueta(subCadena, memoria);
+    etiqueta = existeEtiqueta(subCadena, linea);
     if (etiqueta){       
         espMemoria = false;
     }
     
-    verificarPalabraReservada(subCadena, memoria, cadenaModificada, linea, posInicialDato, espMemoria,etiqueta);
+    verficarDirectivas(subCadena, memoria, cadenaModificada, linea, posInicialDato, espMemoria,etiqueta);
     
     indice = buscarInstruccion(tabcop, subCadena);
     if (indice != -1){
@@ -67,9 +67,9 @@ void leerCampos(Tabcop tabcop[], string &cadenaModificada, string &linea, string
     }
 }
 
-bool existeEtiqueta(string &subCadena, string dirMemoria){
-    int posInicial = 0, posFinal, memoria; 
-    string nomEtiqueta, direccion;
+bool existeEtiqueta(string &subCadena, string linea){
+    int posInicial = 0, posFinal; 
+    string nomEtiqueta;
     if (subCadena[posInicial] == '\t'){
         subCadena = subCadena.substr(posInicial+1, subCadena.size()-1 );
         return false;
@@ -87,7 +87,7 @@ bool existeEtiqueta(string &subCadena, string dirMemoria){
     }
 }
 
-void verificarPalabraReservada(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialDato, bool &espMemoria, bool etiqueta){
+void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialDato, bool &espMemoria, bool etiqueta){
     int posIniDato = 0, posFinalDato = linea.find_first_of(simboloHexadecimal, posInicialDato),dirMemory;
     string numCodigo;
     if (subCadena == "ORG"){
@@ -119,7 +119,7 @@ void verificarPalabraReservada(string subCadena, string &dirMemoria, string &cad
         posIniDato = linea.size() - subCadena.size();
         posFinalDato = linea.size();
         subCadena = linea.substr(posIniDato+1, posFinalDato);
-        validarSistemaNumeracion(subCadena, cadenaModificada, subCadena);
+        validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, subCadena);
         etiquetas[contEtiquetas].setMemoria(subCadena);
         subCadena += '\n';
         escribirTABSIM(subCadena);
@@ -148,7 +148,7 @@ int buscarInstruccion(Tabcop tabcop[], string subCadena){
 void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, string linea, string &cadenaModificada, string &dirMemoria, bool &espMemoria, bool etiqueta){
     int limite = indice + tabcop[indice].getCantidadInstrucciones(), codigo, memoria, posInicial = 0, posFinal;
     string numCodigo;
-    if ("INH" == tabcop[indice].getDireccionamiento()){
+    if (tabcop[indice].getCantidadInstrucciones() == 1){
         memoria = stoi(dirMemoria);
         dirMemoria = decimalAHexa(memoria);
         cadenaModificada += linea +'\t'+ dirMemoria +" "+ tabcop[indice].getCodigoInstruccion()+'\n';
@@ -157,53 +157,23 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
             escribirTABSIM(dirMemoria);
         }
         memoria = memoria + tabcop[indice].getLongitudInstruccion();
-        dirMemoria = to_string(memoria);   
-    }
-    else if (subCadena[0] == '#'){
-        for (int i = indice; i < limite; i++){
-            if ("IMM" == tabcop[i].getDireccionamiento()){
-                memoria = stoi(dirMemoria);
-                dirMemoria = decimalAHexa(memoria);
-                cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
-                if (!espMemoria && etiqueta){
-                    dirMemoria += '\n';
-                    escribirTABSIM(dirMemoria);
-                }
-                memoria = stoi(dirMemoria,0,16);
-                memoria = memoria + tabcop[i].getLongitudInstruccion();
-                dirMemoria = to_string(memoria);
-                posFinal = subCadena.size();
-                subCadena = subCadena.substr(posInicial+1, posFinal);
-                validarSistemaNumeracion(subCadena, cadenaModificada, numCodigo);
-                escribrirCodigoInstruccion(tabcop, i, cadenaModificada, numCodigo);
-            }
-        }
+        dirMemoria = to_string(memoria);
     }
     else{
-        validarSistemaNumeracion(subCadena, cadenaModificada, numCodigo);
-        codigo = stoi(subCadena);
-        if (codigo < limiteDecimalOrp8){
-            for (int i = indice; i < limite; i++){
-                if ("DIR" == tabcop[i].getDireccionamiento()){
-                    memoria = stoi(dirMemoria);
-                    dirMemoria = decimalAHexa(memoria);
-                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
-                    if (!espMemoria && etiqueta){
-                        dirMemoria += '\n';
-                        escribirTABSIM(dirMemoria);
-                    }
-                    memoria = stoi(dirMemoria,0,16);
-                    memoria = memoria + tabcop[i].getLongitudInstruccion();
-                    dirMemoria = to_string(memoria);
-                    posFinal = subCadena.size();
-                    subCadena = subCadena.substr(posInicial+1, posFinal);
-                    escribrirCodigoInstruccion(tabcop, i, cadenaModificada, numCodigo);
-                }
+        if ("INH" == tabcop[indice].getDireccionamiento()){
+            memoria = stoi(dirMemoria);
+            dirMemoria = decimalAHexa(memoria);
+            cadenaModificada += linea +'\t'+ dirMemoria +" "+ tabcop[indice].getCodigoInstruccion()+'\n';
+            if (!espMemoria && etiqueta){
+                dirMemoria += '\n';
+                escribirTABSIM(dirMemoria);
             }
+            memoria = memoria + tabcop[indice].getLongitudInstruccion();
+            dirMemoria = to_string(memoria);   
         }
-        else if (codigo < limiteDecimalOrp16){
+        else if (subCadena[0] == '#'){
             for (int i = indice; i < limite; i++){
-                if ("EXT" == tabcop[i].getDireccionamiento()){
+                if ("IMM" == tabcop[i].getDireccionamiento()){
                     memoria = stoi(dirMemoria);
                     dirMemoria = decimalAHexa(memoria);
                     cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
@@ -216,17 +186,60 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
                     dirMemoria = to_string(memoria);
                     posFinal = subCadena.size();
                     subCadena = subCadena.substr(posInicial+1, posFinal);
+                    validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, numCodigo);
                     escribrirCodigoInstruccion(tabcop, i, cadenaModificada, numCodigo);
                 }
             }
         }
         else{
-            cadenaModificada += linea+'\t'+"FDR"+'\n';
+            validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, numCodigo);
+            codigo = stoi(subCadena);
+            if (codigo < limiteDecimalOrp8){
+                for (int i = indice; i < limite; i++){
+                    if ("DIR" == tabcop[i].getDireccionamiento()){
+                        memoria = stoi(dirMemoria);
+                        dirMemoria = decimalAHexa(memoria);
+                        cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                        if (!espMemoria && etiqueta){
+                            dirMemoria += '\n';
+                            escribirTABSIM(dirMemoria);
+                        }
+                        memoria = stoi(dirMemoria,0,16);
+                        memoria = memoria + tabcop[i].getLongitudInstruccion();
+                        dirMemoria = to_string(memoria);
+                        posFinal = subCadena.size();
+                        subCadena = subCadena.substr(posInicial+1, posFinal);
+                        escribrirCodigoInstruccion(tabcop, i, cadenaModificada, numCodigo);
+                    }
+                }
+            }
+            else if (codigo < limiteDecimalOrp16){
+                for (int i = indice; i < limite; i++){
+                    if ("EXT" == tabcop[i].getDireccionamiento()){
+                        memoria = stoi(dirMemoria);
+                        dirMemoria = decimalAHexa(memoria);
+                        cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                        if (!espMemoria && etiqueta){
+                            dirMemoria += '\n';
+                            escribirTABSIM(dirMemoria);
+                        }
+                        memoria = stoi(dirMemoria,0,16);
+                        memoria = memoria + tabcop[i].getLongitudInstruccion();
+                        dirMemoria = to_string(memoria);
+                        posFinal = subCadena.size();
+                        subCadena = subCadena.substr(posInicial+1, posFinal);
+                        escribrirCodigoInstruccion(tabcop, i, cadenaModificada, numCodigo);
+                    }
+                }
+            }
+            else{
+                cadenaModificada += linea+'\t'+"FDR"+'\n';
+            }
         }
     }
 }
 
-void validarSistemaNumeracion(string &subCadena, string &cadenaModificada, string &numCodigo){
+void validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModificada, string &numCodigo){
     int posInicial = 0, posFinal, numero, decimal;
     if (subCadena[0] == simboloHexadecimal){
         posFinal = subCadena.size();
