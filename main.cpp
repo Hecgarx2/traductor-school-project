@@ -59,4 +59,3 @@ int main(int argc, char const *argv[])
     cout<<"Archivo modificado:\n"<<cadenaFinal;
     return 0;
 }
-

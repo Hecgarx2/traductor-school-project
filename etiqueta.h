@@ -15,7 +15,7 @@ public:
     Etiqueta(string nombre);
     Etiqueta();
     ~Etiqueta();
-    string getNombre(string etiqueta);
+    string getNombre();
     string getMemoria();
     void setMemoria(string memoria);
 };
@@ -32,7 +32,7 @@ Etiqueta::~Etiqueta()
 {
 }
 
-string Etiqueta::getNombre(string etiqueta){
+string Etiqueta::getNombre(){
     return this->nombre;
 }
 

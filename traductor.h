@@ -22,12 +22,31 @@ void validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModifica
 void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModificada, string numCodigo);
 
 void leerLineas(Tabcop tabcop[], string &cadenaFinal){
-    string linea, cadenaModificada, memoria = "0000";
-    int posInicialLinea = 0, posFinalLinea;
-    while (posInicialLinea != cadenaFinal.size()){
+    string linea, cadenaAux, cadenaModificada, memoria = "0000";
+    int posInicialLinea = 0, posInicialLineaAux, posFinalLinea, posFinalCodigo;
+    while (posInicialLinea != cadenaFinal.size()){                  //Primera lectura, reserva de memoria
         posFinalLinea = cadenaFinal.find_first_of(delimitadorLinea, posInicialLinea);
         linea = cadenaFinal.substr(posInicialLinea, posFinalLinea-posInicialLinea);
         leerCampos(tabcop, cadenaModificada, linea, memoria);
+        posInicialLinea = posFinalLinea+1;
+    }
+    posInicialLinea = 0;
+    while (posInicialLinea != cadenaModificada.size()){             //Segunda lectura, valor de codigo
+        posFinalLinea = cadenaModificada.find_first_of(delimitadorLinea, posInicialLinea);
+        linea = cadenaModificada.substr(posInicialLinea, posFinalLinea-posInicialLinea);
+        posInicialLinea = cadenaModificada.find_first_of(delimitadorCampoP, posInicialLinea);
+        posInicialLinea++;
+        cadenaAux = cadenaModificada.substr(posInicialLinea, posFinalLinea-posInicialLinea);
+        posFinalCodigo = cadenaAux.find_first_of(delimitadorEtiqueta);
+        if (posFinalCodigo != -1){
+            cadenaAux = cadenaAux.substr(0, posFinalCodigo);
+        }
+        
+        for (int i = 0; i < contEtiquetas; i++){
+            if (cadenaAux == etiquetas[i].getNombre()){
+                cout<<etiquetas[i].getMemoria()<<endl;
+            }
+        }
         posInicialLinea = posFinalLinea+1;
     }
     cadenaFinal = cadenaModificada;
@@ -107,7 +126,7 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
     else if (subCadena == "END"){
         dirMemory = stoi(dirMemoria);
         dirMemoria = decimalAHexa(dirMemory);
-        cadenaModificada += linea+'\t'+dirMemoria;
+        cadenaModificada += linea+" \t"+dirMemoria+'\n';
         if (!espMemoria && etiqueta){
             etiquetas[contEtiquetas].setMemoria(dirMemoria);
             dirMemoria += '\n';
