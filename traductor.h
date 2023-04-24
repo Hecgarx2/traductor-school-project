@@ -106,46 +106,6 @@ bool existeEtiqueta(string &subCadena, string linea){
     }
 }
 
-void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialDato, bool &espMemoria, bool etiqueta){
-    int posIniDato = 0, posFinalDato = linea.find_first_of(simboloHexadecimal, posInicialDato),dirMemory;
-    string numCodigo;
-    if (subCadena == "ORG"){
-        cadenaModificada += linea+delimitadorLinea;
-        posIniDato = posFinalDato+1;
-        posFinalDato = linea.size();
-        subCadena = linea.substr(posIniDato, posFinalDato);
-        dirMemory = stoi(subCadena,0,16);
-        dirMemoria = to_string(dirMemory);
-        posInicialDato = linea.size();
-        if (!espMemoria && etiqueta){
-            etiquetas[contEtiquetas].setMemoria(dirMemoria);
-            dirMemoria += '\n';
-            escribirTABSIM(dirMemoria);
-        }
-    }
-    else if (subCadena == "END"){
-        dirMemory = stoi(dirMemoria);
-        dirMemoria = decimalAHexa(dirMemory);
-        cadenaModificada += linea+" \t"+dirMemoria+'\n';
-        if (!espMemoria && etiqueta){
-            etiquetas[contEtiquetas].setMemoria(dirMemoria);
-            dirMemoria += '\n';
-            escribirTABSIM(dirMemoria);
-        }
-    }
-    else if (subCadena == "EQU"){
-        cadenaModificada += linea+delimitadorLinea;
-        posIniDato = linea.size() - subCadena.size();
-        posFinalDato = linea.size();
-        subCadena = linea.substr(posIniDato+1, posFinalDato);
-        validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, subCadena);
-        etiquetas[contEtiquetas].setMemoria(subCadena);
-        subCadena += '\n';
-        escribirTABSIM(subCadena);
-        espMemoria = true;
-    }
-}
-
 void escribirTABSIM(string etiqueta){
     ofstream archivoTabsim;
     archivoTabsim.open(archivoTABSIM, ios::app);
@@ -298,6 +258,74 @@ void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModif
         }
         cadenaModificada += numCodigo + '\n';
     }
+}
+
+
+void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialLinea, bool &espMemoria, bool etiqueta){
+    int posIniDato = 0, posFinalDato = linea.find_first_of(simboloHexadecimal, posInicialLinea),memoria;
+    string numCodigo;
+    if (subCadena == "ORG"){
+        cadenaModificada += linea+delimitadorLinea;
+        posIniDato = posFinalDato+1;
+        posFinalDato = linea.size();
+        subCadena = linea.substr(posIniDato, posFinalDato);
+        memoria = stoi(subCadena,0,16);
+        dirMemoria = to_string(memoria);
+        posInicialLinea = linea.size();
+        if (!espMemoria && etiqueta){
+            etiquetas[contEtiquetas].setMemoria(dirMemoria);
+            dirMemoria += '\n';
+            escribirTABSIM(dirMemoria);
+        }
+    }
+    else if (subCadena == "END"){
+        memoria = stoi(dirMemoria);
+        dirMemoria = decimalAHexa(memoria);
+        cadenaModificada += linea+" \t"+dirMemoria+'\n';
+        if (!espMemoria && etiqueta){
+            etiquetas[contEtiquetas].setMemoria(dirMemoria);
+            dirMemoria += '\n';
+            escribirTABSIM(dirMemoria);
+        }
+    }
+    else if (subCadena == "START"){
+        dirMemoria = "0000";
+        cadenaModificada += linea+ '\n';
+        if (!espMemoria && etiqueta){
+            etiquetas[contEtiquetas].setMemoria(dirMemoria);
+            dirMemoria += '\n';
+            escribirTABSIM(dirMemoria);
+        }
+    }
+    else if (subCadena == "EQU"){
+        cadenaModificada += linea+delimitadorLinea;
+        posIniDato = linea.size() - subCadena.size();
+        posFinalDato = linea.size();
+        subCadena = linea.substr(posIniDato+1, posFinalDato);
+        validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, subCadena);
+        etiquetas[contEtiquetas].setMemoria(subCadena);
+        subCadena += '\n';
+        escribirTABSIM(subCadena);
+        espMemoria = true;
+    }
+    else if (subCadena == "DC.B"){
+        memoria = stoi(dirMemoria);
+        dirMemoria = decimalAHexa(memoria);
+        cadenaModificada += linea +'\t'+ dirMemoria;
+        posIniDato = linea.find_first_of(delimitadorCampoP, posInicialLinea);
+        posFinalDato = linea.size();
+        if (posIniDato == -1){
+            cadenaModificada += " 00\n";
+            memoria ++;
+            dirMemoria = to_string(memoria);
+        }
+        else{
+            numCodigo = linea.substr(posIniDato+1, posFinalDato);
+        }
+    }
+    else if (subCadena == "DC.W"){
+        
+    } 
 }
 
 #endif
