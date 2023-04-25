@@ -7,6 +7,7 @@
 #define delimitadorCampoTABCOP '|'
 #define delimitadorCampoP ' '
 #define delimitadorEtiqueta '\t'
+#define delimitadorDCB ','
 #define simboloHexadecimal '$'
 #define simboloOctal '@'
 #define simboloBinario '%'

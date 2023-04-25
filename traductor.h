@@ -20,6 +20,7 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
 void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialDato, bool &espMemoria, bool etiqueta);
 void validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModificada, string &numCodigo);
 void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModificada, string numCodigo);
+void rellenarCeros(string &dirMemoria);
 
 void leerLineas(Tabcop tabcop[], string &cadenaFinal){
     string linea, cadenaAux, cadenaModificada, memoria = "0000";
@@ -130,6 +131,9 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
     if (tabcop[indice].getCantidadInstrucciones() == 1){
         memoria = stoi(dirMemoria);
         dirMemoria = decimalAHexa(memoria);
+        if (dirMemoria.size() < 4){
+            rellenarCeros(dirMemoria);  
+        }
         cadenaModificada += linea +'\t'+ dirMemoria +" "+ tabcop[indice].getCodigoInstruccion()+'\n';
         if (!espMemoria && etiqueta){
             dirMemoria += '\n';
@@ -142,6 +146,9 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
         if ("INH" == tabcop[indice].getDireccionamiento()){
             memoria = stoi(dirMemoria);
             dirMemoria = decimalAHexa(memoria);
+            if (dirMemoria.size() < 4){
+                rellenarCeros(dirMemoria);  
+            }
             cadenaModificada += linea +'\t'+ dirMemoria +" "+ tabcop[indice].getCodigoInstruccion()+'\n';
             if (!espMemoria && etiqueta){
                 dirMemoria += '\n';
@@ -155,7 +162,13 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
                 if ("IMM" == tabcop[i].getDireccionamiento()){
                     memoria = stoi(dirMemoria);
                     dirMemoria = decimalAHexa(memoria);
+                    if (dirMemoria.size() < 4){
+                        rellenarCeros(dirMemoria);  
+                    }
                     cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                    if (dirMemoria.size() < 4){
+                        rellenarCeros(dirMemoria);  
+                    }
                     if (!espMemoria && etiqueta){
                         dirMemoria += '\n';
                         escribirTABSIM(dirMemoria);
@@ -178,6 +191,9 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
                     if ("DIR" == tabcop[i].getDireccionamiento()){
                         memoria = stoi(dirMemoria);
                         dirMemoria = decimalAHexa(memoria);
+                        if (dirMemoria.size() < 4){
+                            rellenarCeros(dirMemoria);  
+                        }
                         cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
                         if (!espMemoria && etiqueta){
                             dirMemoria += '\n';
@@ -197,6 +213,9 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
                     if ("EXT" == tabcop[i].getDireccionamiento()){
                         memoria = stoi(dirMemoria);
                         dirMemoria = decimalAHexa(memoria);
+                        if (dirMemoria.size() < 4){
+                            rellenarCeros(dirMemoria);  
+                        }
                         cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
                         if (!espMemoria && etiqueta){
                             dirMemoria += '\n';
@@ -260,7 +279,6 @@ void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModif
     }
 }
 
-
 void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialLinea, bool &espMemoria, bool etiqueta){
     int posIniDato = 0, posFinalDato = linea.find_first_of(simboloHexadecimal, posInicialLinea),memoria;
     string numCodigo;
@@ -271,6 +289,9 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
         subCadena = linea.substr(posIniDato, posFinalDato);
         memoria = stoi(subCadena,0,16);
         dirMemoria = to_string(memoria);
+        if (dirMemoria.size() < 4){
+            rellenarCeros(dirMemoria);  
+        }
         posInicialLinea = linea.size();
         if (!espMemoria && etiqueta){
             etiquetas[contEtiquetas].setMemoria(dirMemoria);
@@ -281,6 +302,9 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
     else if (subCadena == "END"){
         memoria = stoi(dirMemoria);
         dirMemoria = decimalAHexa(memoria);
+        if (dirMemoria.size() < 4){
+            rellenarCeros(dirMemoria);  
+        }
         cadenaModificada += linea+" \t"+dirMemoria+'\n';
         if (!espMemoria && etiqueta){
             etiquetas[contEtiquetas].setMemoria(dirMemoria);
@@ -302,16 +326,19 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
         posIniDato = linea.size() - subCadena.size();
         posFinalDato = linea.size();
         subCadena = linea.substr(posIniDato+1, posFinalDato);
-        validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, subCadena);
-        etiquetas[contEtiquetas].setMemoria(subCadena);
-        subCadena += '\n';
-        escribirTABSIM(subCadena);
+        validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, numCodigo);
+        etiquetas[contEtiquetas].setMemoria(numCodigo);
+        numCodigo += '\n';
+        escribirTABSIM(numCodigo);
         espMemoria = true;
     }
     else if (subCadena == "DC.B"){
         memoria = stoi(dirMemoria);
         dirMemoria = decimalAHexa(memoria);
-        cadenaModificada += linea +'\t'+ dirMemoria;
+        if (dirMemoria.size() < 4){
+            rellenarCeros(dirMemoria);  
+        }
+        cadenaModificada += linea +'\t'+ dirMemoria + ' ';
         posIniDato = linea.find_first_of(delimitadorCampoP, posInicialLinea);
         posFinalDato = linea.size();
         if (posIniDato == -1){
@@ -320,12 +347,87 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
             dirMemoria = to_string(memoria);
         }
         else{
-            numCodigo = linea.substr(posIniDato+1, posFinalDato);
+            subCadena = linea.substr(posIniDato+1, posFinalDato);
+            posFinalDato = subCadena.find_first_of(delimitadorDCB, posInicialLinea);
+            if (posFinalDato != -1){
+                posIniDato = 0;
+                while (posIniDato < subCadena.size()){
+                    numCodigo = subCadena.substr(posIniDato, posFinalDato);
+                    validarSistemaNumeracionOEtiqueta(numCodigo, cadenaModificada, numCodigo);
+                    cadenaModificada += numCodigo + ' ';
+                    memoria ++;
+                    dirMemoria = to_string(memoria);
+                    posIniDato = posFinalDato+1;
+                    posFinalDato = subCadena.find_first_of(delimitadorDCB, posIniDato);
+                    if (posFinalDato == -1){
+                        posFinalDato = subCadena.size();
+                    }
+                }
+                cadenaModificada += '\n';
+            }
+            else{
+                validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, numCodigo);
+                cadenaModificada += numCodigo + '\n';
+                memoria ++;
+                dirMemoria = to_string(memoria);
+            }
         }
     }
     else if (subCadena == "DC.W"){
-        
+        memoria = stoi(dirMemoria);
+        dirMemoria = decimalAHexa(memoria);
+        if (dirMemoria.size() < 4){
+            rellenarCeros(dirMemoria);  
+        }
+        cadenaModificada += linea +'\t'+ dirMemoria + ' ';
+        posIniDato = linea.find_first_of(delimitadorCampoP, posInicialLinea);
+        posFinalDato = linea.size();
+        if (posIniDato == -1){
+            cadenaModificada += " 0000\n";
+            memoria += 2;
+            dirMemoria = to_string(memoria);
+        }
+        else{
+            subCadena = linea.substr(posIniDato+1, posFinalDato);
+            posFinalDato = subCadena.find_first_of(delimitadorDCB, posInicialLinea);
+            if (posFinalDato != -1){
+                posIniDato = 0;
+                while (posIniDato < subCadena.size()){
+                    numCodigo = subCadena.substr(posIniDato, posFinalDato);
+                    validarSistemaNumeracionOEtiqueta(numCodigo, cadenaModificada, numCodigo);
+                    rellenarCeros(numCodigo);
+                    cadenaModificada += numCodigo + ' ';
+                    memoria += 2;
+                    dirMemoria = to_string(memoria);
+                    posIniDato = posFinalDato+1;
+                    posFinalDato = subCadena.find_first_of(delimitadorDCB, posIniDato);
+                    if (posFinalDato == -1){
+                        posFinalDato = subCadena.size();
+                    }
+                }
+                cadenaModificada += '\n';
+            }
+            else{
+                validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, numCodigo);
+                rellenarCeros(numCodigo);
+                cadenaModificada += numCodigo + '\n';
+                memoria += 2;
+                dirMemoria = to_string(memoria);
+            }
+        }
     } 
+}
+
+void rellenarCeros(string &dirMemoria){
+    int espacios = 4;
+    int longCodigo = dirMemoria.size();
+    espacios =  espacios - longCodigo;
+    string ceros = "";
+    while (espacios > 0){
+        ceros += '0';
+        espacios--;
+    }
+    dirMemoria = ceros + dirMemoria;
 }
 
 #endif
