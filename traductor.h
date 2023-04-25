@@ -280,7 +280,7 @@ void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModif
 }
 
 void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialLinea, bool &espMemoria, bool etiqueta){
-    int posIniDato = 0, posFinalDato = linea.find_first_of(simboloHexadecimal, posInicialLinea),memoria;
+    int posIniDato = 0, posFinalDato = linea.find_first_of(simboloHexadecimal, posInicialLinea),memoria, numeroAux;
     string numCodigo;
     if (subCadena == "ORG"){
         cadenaModificada += linea+delimitadorLinea;
@@ -415,7 +415,67 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
                 dirMemoria = to_string(memoria);
             }
         }
-    } 
+    }
+    else if (subCadena == "BSZ" || subCadena == "ZMB"){
+        memoria = stoi(dirMemoria);
+        dirMemoria = decimalAHexa(memoria);
+        if (dirMemoria.size() < 4){
+            rellenarCeros(dirMemoria);  
+        }
+        cadenaModificada += linea +'\t'+ dirMemoria + ' ';
+        posIniDato = linea.size() - subCadena.size();
+        posFinalDato = linea.size();
+        subCadena = linea.substr(posIniDato+1, posFinalDato);
+        validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, numCodigo);
+        numeroAux = stoi(numCodigo,0,16);
+        for (int i = 0; i < numeroAux; i++){
+            cadenaModificada += "00 ";
+            memoria++;
+        }
+        dirMemoria = to_string(memoria);
+        cadenaModificada += '\n';
+    }
+    else if (subCadena == "FCC"){
+        char charActual;
+        int asciiCod, i = 0;
+        memoria = stoi(dirMemoria);
+        dirMemoria = decimalAHexa(memoria);
+        if (dirMemoria.size() < 4){
+            rellenarCeros(dirMemoria);  
+        }
+        cadenaModificada += linea +'\t'+ dirMemoria + ' ';
+        posIniDato = linea.find_first_of('/',0);
+        posFinalDato = linea.size();
+        subCadena = linea.substr(posIniDato+1, posFinalDato);
+        while (subCadena[i+1] != '/'){
+            charActual = subCadena[i];
+            asciiCod = charActual;
+            i++;
+        }
+    }
+    else if (subCadena == "FILL"){
+        memoria = stoi(dirMemoria);
+        dirMemoria = decimalAHexa(memoria);
+        if (dirMemoria.size() < 4){
+            rellenarCeros(dirMemoria);  
+        }
+        cadenaModificada += linea +'\t'+ dirMemoria + ' ';
+        posIniDato = linea.size() - subCadena.size();
+        posFinalDato = linea.size();
+        subCadena = linea.substr(posIniDato+1, posFinalDato);
+        posFinalDato = subCadena.find_first_of(delimitadorDCB, 0);
+        numCodigo = linea.substr(posIniDato+1, posFinalDato);
+        validarSistemaNumeracionOEtiqueta(numCodigo, cadenaModificada, numCodigo);
+        posIniDato = posFinalDato+1;
+        subCadena = subCadena.substr(posIniDato,subCadena.size());
+        numeroAux = stoi(subCadena);
+        for (int i = 0; i < numeroAux; i++){
+            cadenaModificada += numCodigo + ' ';
+            memoria++;
+        }
+        dirMemoria = to_string(memoria);
+        cadenaModificada += '\n';
+    }
 }
 
 void rellenarCeros(string &dirMemoria){
