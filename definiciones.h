@@ -3,6 +3,7 @@
 #define nombreArchivo "Directivas.asm"
 #define archivoTABCOP "TABCOP.txt"
 #define archivoTABSIM "TABSIM.txt"
+#define archivoFinal "x.lsx"
 #define delimitadorLinea '\n'
 #define delimitadorCampoTABCOP '|'
 #define delimitadorCampoP ' '

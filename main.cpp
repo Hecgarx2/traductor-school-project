@@ -47,6 +47,15 @@ void cargarArchivo(string &cadenaF){
     } 
 }
 
+void escribirArchivoFinal(string cadenaFinal){
+    ofstream archivo;
+    archivo.open(archivoFinal, ios::app);
+    if (archivo.is_open()){
+        archivo<<cadenaFinal;
+        archivo.close();
+    }
+}
+
 int main(int argc, char const *argv[])
 {
     string cadenaFinal;
@@ -57,5 +66,6 @@ int main(int argc, char const *argv[])
     cout<<"Archivo orginal:\n"<<cadenaFinal;
     leerLineas(tabcop,cadenaFinal);
     cout<<"Archivo modificado:\n"<<cadenaFinal;
+    escribirArchivoFinal(cadenaFinal);
     return 0;
 }

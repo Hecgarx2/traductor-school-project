@@ -435,6 +435,21 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
         dirMemoria = to_string(memoria);
         cadenaModificada += '\n';
     }
+    else if (subCadena == "FCB"){
+        memoria = stoi(dirMemoria);
+        dirMemoria = decimalAHexa(memoria);
+        if (dirMemoria.size() < 4){
+            rellenarCeros(dirMemoria);  
+        }
+        cadenaModificada += linea +'\t'+ dirMemoria + ' ';
+        posIniDato = linea.size() - subCadena.size();
+        posFinalDato = linea.size();
+        subCadena = linea.substr(posIniDato+1, posFinalDato);
+        validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, numCodigo);
+        cadenaModificada += numCodigo + '\n';
+        memoria++;
+        dirMemoria = to_string(memoria);
+    }
     else if (subCadena == "FCC"){
         char charActual;
         int asciiCod, i = 0;
@@ -447,11 +462,17 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
         posIniDato = linea.find_first_of('/',0);
         posFinalDato = linea.size();
         subCadena = linea.substr(posIniDato+1, posFinalDato);
-        while (subCadena[i+1] != '/'){
+        charActual = subCadena[i];
+        while (subCadena[i] != '/'){
             charActual = subCadena[i];
             asciiCod = charActual;
+            numCodigo = decimalAHexa(asciiCod);
+            cadenaModificada += numCodigo + ' ';
+            memoria++;
             i++;
         }
+        cadenaModificada+= '\n';
+        dirMemoria = to_string(memoria);
     }
     else if (subCadena == "FILL"){
         memoria = stoi(dirMemoria);
