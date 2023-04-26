@@ -31,7 +31,7 @@ string decimalAHexa(int decimal){
         decimal = resultado;
     }while (resultado > 15);
     if (resultado >= 10 && resultado <= 15){
-        switch(residuo){
+        switch(resultado){
             case 10:    numHexa +='A';  break;
             case 11:    numHexa +='B';  break;
             case 12:    numHexa +='C';  break;

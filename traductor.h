@@ -2,6 +2,7 @@
 #define TRADUCTOR_H_INCLUDED
 #include <iostream>
 #include <string>
+#include <bitset>
 #include "definiciones.h"
 #include "tabcop.h"
 #include "etiqueta.h"
@@ -61,8 +62,34 @@ void leerLineas(Tabcop tabcop[], string &cadenaFinal){
                         }
                     }
                 }
-                else{
-                    
+                else{ //ERROR AL CORTAR LA CADENA FINAL
+                    string direccion, numBinario, codRelativo;
+                    int dirEtiqueta, dirSiguiente, resultadoRelativo;
+                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorLinea, posInicialLinea);
+                    cadenaMitadInicio = cadenaFinal.substr(0,posFinalCodigo);                          //Partir cadena a la mitad para agregar codigo de etiqueta
+                    cadenaMitadFinal = cadenaFinal.substr(posFinalCodigo, cadenaModificada.size());    //
+                    posInicialLinea = cadenaFinal.find_first_of(delimitadorCampoP, posInicialLinea);
+                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorEtiqueta,posInicialLinea);
+                    posInicialLinea++;
+                    cadenaAux = cadenaFinal.substr(posInicialLinea, posFinalCodigo - posInicialLinea); //Encuentro etiqueta
+                    for (int j = 0; j < contEtiquetas; j++){                                           //Busco direccion de memoria de la etiqueta
+                        if (cadenaAux == etiquetas[j].getNombre()){
+                            cadenaAux = etiquetas[j].getMemoria();
+                            break;
+                        }
+                    }
+                    posInicialLinea = posFinalCodigo+1;
+                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorCampoP, posInicialLinea);
+                    direccion = cadenaFinal.substr(posInicialLinea, posFinalCodigo - posInicialLinea);
+                    dirEtiqueta = stoi(cadenaAux,0,16);
+                    dirSiguiente = stoi(direccion,0,16);
+                    dirSiguiente = dirSiguiente + tabcop[indice].getLongitudInstruccion();
+                    resultadoRelativo = dirEtiqueta -  dirSiguiente;
+                    bitset<16> bs1(resultadoRelativo);                                                 //Tranformo resultado a bin Complemento 2
+                    numBinario = bs1.to_string();
+                    resultadoRelativo = stoi(numBinario,0, 2);
+                    codRelativo = decimalAHexa(resultadoRelativo);
+                    cadenaModificada = cadenaMitadInicio + ' ' +codRelativo + cadenaMitadFinal;
                 }
                 break;
             }
