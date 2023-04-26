@@ -10,6 +10,7 @@
 using namespace std;
 
 Etiqueta etiquetas[cantidadEtiquetas];
+int contLinea = 0, idLineaEtiqueta[cantidadEtiquetas], contLineasEtiquetas = 0;
 
 void leerLineas(Tabcop tabcop[], string &cadenaFinal);
 void leerCampos(Tabcop tabcop[], string &cadenaModificada, string &linea, string &memoria);
@@ -23,7 +24,7 @@ void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModif
 void rellenarCeros(string &dirMemoria);
 
 void leerLineas(Tabcop tabcop[], string &cadenaFinal){
-    string linea, cadenaAux, cadenaModificada, memoria = "0000";
+    string linea, cadenaModificada, memoria = "0000";
     int posInicialLinea = 0, posInicialLineaAux, posFinalLinea, posFinalCodigo;
     while (posInicialLinea != cadenaFinal.size()){                  //Primera lectura, reserva de memoria
         posFinalLinea = cadenaFinal.find_first_of(delimitadorLinea, posInicialLinea);
@@ -31,21 +32,39 @@ void leerLineas(Tabcop tabcop[], string &cadenaFinal){
         leerCampos(tabcop, cadenaModificada, linea, memoria);
         posInicialLinea = posFinalLinea+1;
     }
+    cadenaFinal = cadenaModificada;
     posInicialLinea = 0;
-    while (posInicialLinea != cadenaModificada.size()){             //Segunda lectura, valor de codigo
-        posFinalLinea = cadenaModificada.find_first_of(delimitadorLinea, posInicialLinea);
-        linea = cadenaModificada.substr(posInicialLinea, posFinalLinea-posInicialLinea);
-        posInicialLinea = cadenaModificada.find_first_of(delimitadorCampoP, posInicialLinea);
-        posInicialLinea++;
-        cadenaAux = cadenaModificada.substr(posInicialLinea, posFinalLinea-posInicialLinea);
-        posFinalCodigo = cadenaAux.find_first_of(delimitadorEtiqueta);
-        if (posFinalCodigo != -1){
-            cadenaAux = cadenaAux.substr(0, posFinalCodigo);
-        }
-        
+    int lineaActual = 0, indice;
+    string cadenaMitadInicio, cadenaMitadFinal, cadenaAux;
+    while (posInicialLinea != cadenaFinal.size()){   //Segunda lectura, valor de codigo   
+        posFinalLinea = cadenaFinal.find_first_of(delimitadorLinea, posInicialLinea);
+        linea = cadenaFinal.substr(posInicialLinea, posFinalLinea-posInicialLinea);
+        lineaActual++;
         for (int i = 0; i < contEtiquetas; i++){
-            if (cadenaAux == etiquetas[i].getNombre()){
-                cout<<etiquetas[i].getMemoria()<<endl;
+            if (lineaActual == idLineaEtiqueta[i]){
+                posFinalCodigo = cadenaFinal.find_first_of(delimitadorCampoP, posInicialLinea);
+                posInicialLinea++;
+                cadenaAux = cadenaFinal.substr(posInicialLinea, posFinalCodigo-posInicialLinea);
+                indice = buscarInstruccion(tabcop, cadenaAux);
+                if (tabcop[indice].getDireccionamiento() != "REL"){
+                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorLinea, posInicialLinea);
+                    cadenaMitadInicio = cadenaFinal.substr(0,posFinalCodigo);                          //Partir cadena a la mitad para agregar codigo de etiqueta
+                    cadenaMitadFinal = cadenaFinal.substr(posFinalCodigo, cadenaModificada.size());    //
+                    posInicialLinea = cadenaFinal.find_first_of(delimitadorCampoP, posInicialLinea);
+                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorEtiqueta,posInicialLinea);
+                    posInicialLinea++;
+                    cadenaAux = cadenaFinal.substr(posInicialLinea, posFinalCodigo - posInicialLinea);
+                    for (int j = 0; j < contEtiquetas; j++){
+                        if (cadenaAux == etiquetas[j].getNombre()){
+                            cadenaModificada = cadenaMitadInicio + ' ' +etiquetas[j].getMemoria() + cadenaMitadFinal;
+                            break;
+                        }
+                    }
+                }
+                else{
+                    
+                }
+                break;
             }
         }
         posInicialLinea = posFinalLinea+1;
@@ -57,6 +76,7 @@ void leerCampos(Tabcop tabcop[], string &cadenaModificada, string &linea, string
     string subCadena;
     bool etiqueta, espMemoria;
     int posInicialDato = 0, posFinalDato, indice, indiceMnemonico, dirMemoria;
+    contLinea++;
     posFinalDato = linea.find_first_of(delimitadorCampoP, posInicialDato);
     if (posFinalDato == -1){
         posFinalDato = linea.size();
@@ -141,6 +161,7 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
         }
         memoria = memoria + tabcop[indice].getLongitudInstruccion();
         dirMemoria = to_string(memoria);
+        validarSistemaNumeracionOEtiqueta(subCadena, cadenaModificada, numCodigo);
     }
     else{
         if ("INH" == tabcop[indice].getDireccionamiento()){
@@ -237,6 +258,15 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
     }
 }
 
+bool isNumber(const string subCadena)
+{
+    for (char const &c : subCadena) {
+        if (isdigit(c) == 0) return false;
+    }
+    return true;
+}
+
+
 void validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModificada, string &numCodigo){
     int posInicial = 0, posFinal, numero, decimal;
     if (subCadena[0] == simboloHexadecimal){
@@ -257,8 +287,14 @@ void validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModifica
         numCodigo = decimalAHexa(decimal);
     }
     else{
-        numero = stoi(subCadena);
-        numCodigo = decimalAHexa(numero);
+        if (isNumber(subCadena)){
+            numero = stoi(subCadena);
+            numCodigo = decimalAHexa(numero);
+        }
+        else{
+            idLineaEtiqueta[contLineasEtiquetas] = contLinea;
+            contLineasEtiquetas++;
+        }
     }
 }
 
