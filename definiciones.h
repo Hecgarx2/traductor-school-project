@@ -14,7 +14,7 @@
 #define simboloBinario '%'
 #define limiteDecimalOrp8 255
 #define limiteDecimalOrp16 65535
-const int cantidadMnemonicos = 35;
+const int cantidadMnemonicos = 39;
 const int cantidadEtiquetas = 6;
 int contEtiquetas = 0;
 
