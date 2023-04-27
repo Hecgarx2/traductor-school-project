@@ -37,27 +37,28 @@ void leerLineas(Tabcop tabcop[], string &cadenaFinal){
     posInicialLinea = 0;
     int lineaActual = 0, indice;
     string cadenaMitadInicio, cadenaMitadFinal, cadenaAux;
-    while (posInicialLinea != cadenaFinal.size()){   //Segunda lectura, valor de codigo   
-        posFinalLinea = cadenaFinal.find_first_of(delimitadorLinea, posInicialLinea);
-        linea = cadenaFinal.substr(posInicialLinea, posFinalLinea-posInicialLinea);
+    while (posInicialLinea != cadenaModificada.size()){   //Segunda lectura, valor de codigo   
+        posFinalLinea = cadenaModificada.find_first_of(delimitadorLinea, posInicialLinea);
+        linea = cadenaModificada.substr(posInicialLinea, posFinalLinea-posInicialLinea);
         lineaActual++;
         for (int i = 0; i < contEtiquetas; i++){
             if (lineaActual == idLineaEtiqueta[i]){
-                posFinalCodigo = cadenaFinal.find_first_of(delimitadorCampoP, posInicialLinea);
+                posFinalCodigo = cadenaModificada.find_first_of(delimitadorCampoP, posInicialLinea);
                 posInicialLinea++;
-                cadenaAux = cadenaFinal.substr(posInicialLinea, posFinalCodigo-posInicialLinea);
+                cadenaAux = cadenaModificada.substr(posInicialLinea, posFinalCodigo-posInicialLinea);
                 indice = buscarInstruccion(tabcop, cadenaAux);
                 if (tabcop[indice].getDireccionamiento() != "REL"){
-                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorLinea, posInicialLinea);
-                    cadenaMitadInicio = cadenaFinal.substr(0,posFinalCodigo);                          //Partir cadena a la mitad para agregar codigo de etiqueta
-                    cadenaMitadFinal = cadenaFinal.substr(posFinalCodigo, cadenaModificada.size());    //
-                    posInicialLinea = cadenaFinal.find_first_of(delimitadorCampoP, posInicialLinea);
-                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorEtiqueta,posInicialLinea);
+                    posFinalCodigo = cadenaModificada.find_first_of(delimitadorLinea, posInicialLinea);
+                    cadenaMitadInicio = cadenaModificada.substr(0,posFinalCodigo);                          //Partir cadena a la mitad para agregar codigo de etiqueta
+                    cadenaMitadFinal = cadenaModificada.substr(posFinalCodigo, cadenaModificada.size());    //
+                    posInicialLinea = cadenaModificada.find_first_of(delimitadorCampoP, posInicialLinea);
+                    posFinalCodigo = cadenaModificada.find_first_of(delimitadorEtiqueta,posInicialLinea);
                     posInicialLinea++;
-                    cadenaAux = cadenaFinal.substr(posInicialLinea, posFinalCodigo - posInicialLinea);
+                    cadenaAux = cadenaModificada.substr(posInicialLinea, posFinalCodigo - posInicialLinea);
                     for (int j = 0; j < contEtiquetas; j++){
                         if (cadenaAux == etiquetas[j].getNombre()){
                             cadenaModificada = cadenaMitadInicio + ' ' +etiquetas[j].getMemoria() + cadenaMitadFinal;
+                            posFinalLinea = cadenaMitadInicio.size() + etiquetas[j].getMemoria().size() +1;
                             break;
                         }
                     }
@@ -65,13 +66,13 @@ void leerLineas(Tabcop tabcop[], string &cadenaFinal){
                 else{ //ERROR AL CORTAR LA CADENA FINAL
                     string direccion, numBinario, codRelativo;
                     int dirEtiqueta, dirSiguiente, resultadoRelativo;
-                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorLinea, posInicialLinea);
-                    cadenaMitadInicio = cadenaFinal.substr(0,posFinalCodigo);                          //Partir cadena a la mitad para agregar codigo de etiqueta
-                    cadenaMitadFinal = cadenaFinal.substr(posFinalCodigo, cadenaModificada.size());    //
-                    posInicialLinea = cadenaFinal.find_first_of(delimitadorCampoP, posInicialLinea);
-                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorEtiqueta,posInicialLinea);
+                    posFinalCodigo = cadenaModificada.find_first_of(delimitadorLinea, posInicialLinea);
+                    cadenaMitadInicio = cadenaModificada.substr(0,posFinalCodigo);                          //Partir cadena a la mitad para agregar codigo de etiqueta
+                    cadenaMitadFinal = cadenaModificada.substr(posFinalCodigo, cadenaModificada.size());    //
+                    posInicialLinea = cadenaModificada.find_first_of(delimitadorCampoP, posInicialLinea);
+                    posFinalCodigo = cadenaModificada.find_first_of(delimitadorEtiqueta,posInicialLinea);
                     posInicialLinea++;
-                    cadenaAux = cadenaFinal.substr(posInicialLinea, posFinalCodigo - posInicialLinea); //Encuentro etiqueta
+                    cadenaAux = cadenaModificada.substr(posInicialLinea, posFinalCodigo - posInicialLinea); //Encuentro etiqueta
                     for (int j = 0; j < contEtiquetas; j++){                                           //Busco direccion de memoria de la etiqueta
                         if (cadenaAux == etiquetas[j].getNombre()){
                             cadenaAux = etiquetas[j].getMemoria();
@@ -79,8 +80,8 @@ void leerLineas(Tabcop tabcop[], string &cadenaFinal){
                         }
                     }
                     posInicialLinea = posFinalCodigo+1;
-                    posFinalCodigo = cadenaFinal.find_first_of(delimitadorCampoP, posInicialLinea);
-                    direccion = cadenaFinal.substr(posInicialLinea, posFinalCodigo - posInicialLinea);
+                    posFinalCodigo = cadenaModificada.find_first_of(delimitadorCampoP, posInicialLinea);
+                    direccion = cadenaModificada.substr(posInicialLinea, posFinalCodigo - posInicialLinea);
                     dirEtiqueta = stoi(cadenaAux,0,16);
                     dirSiguiente = stoi(direccion,0,16);
                     dirSiguiente = dirSiguiente + tabcop[indice].getLongitudInstruccion();
