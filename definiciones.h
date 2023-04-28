@@ -1,6 +1,6 @@
 #ifndef DEFINICIONES_H_INCLUDED
 #define DEFINICIONES_H_INCLUDED
-#define nombreArchivo "Directivas.asm"
+#define nombreArchivo "P10.asm"
 #define archivoTABCOP "TABCOP.txt"
 #define archivoTABSIM "TABSIM.txt"
 #define archivoFinal "x.lsx"
