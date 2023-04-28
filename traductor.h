@@ -22,6 +22,7 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
 void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModificada, string linea, int &posInicialDato, bool &espMemoria, bool etiqueta);
 bool validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModificada, string &numCodigo);
 bool validarIndexado(string &subCadena, string &cadenaModificada, string &numCodigo);
+void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice,int limite, string linea, string &cadenaModificada, string &dirMemoria);
 void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModificada, string numCodigo);
 void rellenarCeros(string &dirMemoria, int espacios);
 
@@ -252,7 +253,9 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
                     if (dirMemoria.size() < 4){
                         rellenarCeros(dirMemoria,4);  
                     }
-                    cadenaModificada += linea+'\t'+dirMemoria+" "+"Es un Idexado\n";
+                    encontrarFormulaIndexado(tabcop,subCadena,indice,limite,linea,cadenaModificada,dirMemoria);
+                    memoria = memoria + tabcop[indice].getLongitudInstruccion();
+                    dirMemoria = to_string(memoria);
                     if (!espMemoria && etiqueta){
                         dirMemoria += '\n';
                         escribirTABSIM(dirMemoria);
@@ -325,6 +328,61 @@ bool isNumber(const string subCadena)
     return true;
 }
 
+void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice, int limite, string linea, string &cadenaModificada, string &dirMemoria){
+    int posFinalDato, posIniDato = 0, numIdx;
+    string valorAux, numCodigo;
+    if (subCadena[0] == '['){
+        for (int i = indice; i < limite; i++){
+            if (tabcop[i].getDireccionamiento() == "IDX3"){
+                cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 3\n";
+                indice = i;
+                break;
+            }
+        }
+    }
+    else if (subCadena[0] == delimitadorComa){
+        for (int i = indice; i < limite; i++){
+            if (tabcop[i].getDireccionamiento() == "IDX"){
+                cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 1\n";
+                indice = i;
+                break;
+            }
+        }
+    }
+    else{
+        posFinalDato = subCadena.find_first_of(delimitadorComa, 0);
+        valorAux = subCadena.substr(0,posFinalDato);
+        numIdx = stoi(valorAux);
+        if (numIdx <= 15 && numIdx >= -16){
+            for (int i = indice; i < limite; i++){
+                if (tabcop[i].getDireccionamiento() == "IDX"){
+                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 1\n";
+                    indice = i;
+                    break;
+                }
+            }   
+        }
+        else if (numIdx <= 255 && numIdx >= -256){
+            for (int i = indice; i < limite; i++){
+                if (tabcop[i].getDireccionamiento() == "IDX1"){
+                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 2\n";
+                    indice = i;
+                    break;
+                }
+            }   
+        }
+        else{
+            for (int i = indice; i < limite; i++){
+                if (tabcop[i].getDireccionamiento() == "IDX2"){
+                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 2\n";
+                    indice = i;
+                    break;
+                }
+            }
+        }
+        //validarSistemaNumeracionOEtiqueta(valorAux,cadenaModificada,numCodigo);
+    }
+}
 
 bool validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModificada, string &numCodigo){
     int posInicial = 0, posFinal, numero, decimal, numIdx;
@@ -455,7 +513,7 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
         }
         else{
             subCadena = linea.substr(posIniDato+1, posFinalDato);
-            posFinalDato = subCadena.find_first_of(delimitadorDCB, posInicialLinea);
+            posFinalDato = subCadena.find_first_of(delimitadorComa, posInicialLinea);
             if (posFinalDato != -1){
                 posIniDato = 0;
                 while (posIniDato < subCadena.size()){
@@ -465,7 +523,7 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
                     memoria ++;
                     dirMemoria = to_string(memoria);
                     posIniDato = posFinalDato+1;
-                    posFinalDato = subCadena.find_first_of(delimitadorDCB, posIniDato);
+                    posFinalDato = subCadena.find_first_of(delimitadorComa, posIniDato);
                     if (posFinalDato == -1){
                         posFinalDato = subCadena.size();
                     }
@@ -496,7 +554,7 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
         }
         else{
             subCadena = linea.substr(posIniDato+1, posFinalDato);
-            posFinalDato = subCadena.find_first_of(delimitadorDCB, posInicialLinea);
+            posFinalDato = subCadena.find_first_of(delimitadorComa, posInicialLinea);
             if (posFinalDato != -1){
                 posIniDato = 0;
                 while (posIniDato < subCadena.size()){
@@ -507,7 +565,7 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
                     memoria += 2;
                     dirMemoria = to_string(memoria);
                     posIniDato = posFinalDato+1;
-                    posFinalDato = subCadena.find_first_of(delimitadorDCB, posIniDato);
+                    posFinalDato = subCadena.find_first_of(delimitadorComa, posIniDato);
                     if (posFinalDato == -1){
                         posFinalDato = subCadena.size();
                     }
@@ -598,7 +656,7 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
         posIniDato = linea.size() - subCadena.size();
         posFinalDato = linea.size();
         subCadena = linea.substr(posIniDato+1, posFinalDato);
-        posFinalDato = subCadena.find_first_of(delimitadorDCB, 0);
+        posFinalDato = subCadena.find_first_of(delimitadorComa, 0);
         numCodigo = linea.substr(posIniDato+1, posFinalDato);
         validarSistemaNumeracionOEtiqueta(numCodigo, cadenaModificada, numCodigo);
         posIniDato = posFinalDato+1;
