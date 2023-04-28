@@ -23,6 +23,7 @@ void verficarDirectivas(string subCadena, string &dirMemoria, string &cadenaModi
 bool validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModificada, string &numCodigo);
 bool validarIndexado(string &subCadena, string &cadenaModificada, string &numCodigo);
 void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice,int limite, string linea, string &cadenaModificada, string &dirMemoria);
+void formula1Indexado(string &subCadena,int valorIdx, string &cadenaModificada);
 void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModificada, string numCodigo);
 void rellenarCeros(string &dirMemoria, int espacios);
 
@@ -75,7 +76,7 @@ void leerLineas(Tabcop tabcop[], string &cadenaFinal){
                     posFinalCodigo = cadenaModificada.find_first_of(delimitadorEtiqueta,posInicialLinea);
                     posInicialLinea++;
                     cadenaAux = cadenaModificada.substr(posInicialLinea, posFinalCodigo - posInicialLinea); //Encuentro etiqueta
-                    for (int j = 0; j < contEtiquetas; j++){                                           //Busco direccion de memoria de la etiqueta
+                    for (int j = 0; j < contEtiquetas; j++){                                                //Busco direccion de memoria de la etiqueta
                         if (cadenaAux == etiquetas[j].getNombre()){
                             cadenaAux = etiquetas[j].getMemoria();
                             break;
@@ -330,7 +331,7 @@ bool isNumber(const string subCadena)
 
 void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice, int limite, string linea, string &cadenaModificada, string &dirMemoria){
     int posFinalDato, posIniDato = 0, numIdx;
-    string valorAux, numCodigo;
+    string valorIdx, valorFormIdx;
     if (subCadena[0] == '['){
         for (int i = indice; i < limite; i++){
             if (tabcop[i].getDireccionamiento() == "IDX3"){
@@ -343,7 +344,10 @@ void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice, i
     else if (subCadena[0] == delimitadorComa){
         for (int i = indice; i < limite; i++){
             if (tabcop[i].getDireccionamiento() == "IDX"){
-                cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 1\n";
+                cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                numIdx = 0;
+                valorFormIdx = subCadena.substr(1,subCadena.size()-1);
+                formula1Indexado(valorFormIdx,numIdx,cadenaModificada);
                 indice = i;
                 break;
             }
@@ -351,12 +355,15 @@ void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice, i
     }
     else{
         posFinalDato = subCadena.find_first_of(delimitadorComa, 0);
-        valorAux = subCadena.substr(0,posFinalDato);
-        numIdx = stoi(valorAux);
+        valorIdx = subCadena.substr(0,posFinalDato);
+        numIdx = stoi(valorIdx);
         if (numIdx <= 15 && numIdx >= -16){
             for (int i = indice; i < limite; i++){
                 if (tabcop[i].getDireccionamiento() == "IDX"){
-                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 1\n";
+                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                    posIniDato = posFinalDato+1;
+                    valorFormIdx = subCadena.substr(posIniDato, subCadena.size()-posIniDato);
+                    formula1Indexado(valorFormIdx,numIdx,cadenaModificada);
                     indice = i;
                     break;
                 }
@@ -380,7 +387,47 @@ void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice, i
                 }
             }
         }
-        //validarSistemaNumeracionOEtiqueta(valorAux,cadenaModificada,numCodigo);
+    }
+}
+
+void formula1Indexado(string &subCadena,int valorIdx, string &cadenaModificada){
+    string resultIndexado, numBinario;
+    int resultDecimal;
+    if (subCadena == "X"){
+        resultIndexado = "000";
+        bitset<5> bs1(valorIdx);                                                 
+        numBinario = bs1.to_string();
+        resultIndexado += numBinario;
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        cadenaModificada += resultIndexado + " FORMULA 1\n";
+    }
+    else if (subCadena == "Y"){
+        resultIndexado = "010";
+        bitset<5> bs1(valorIdx);                                                 
+        numBinario = bs1.to_string();
+        resultIndexado += numBinario;
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        cadenaModificada += resultIndexado + " FORMULA 1\n";
+    }
+    else if (subCadena == "SP"){
+        resultIndexado = "100";
+        bitset<5> bs1(valorIdx);                                                 
+        numBinario = bs1.to_string();
+        resultIndexado += numBinario;
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        cadenaModificada += resultIndexado + " FORMULA 1\n";   
+    }
+    else if (subCadena == "PC"){
+        resultIndexado = "110";
+        bitset<5> bs1(valorIdx);                                                 
+        numBinario = bs1.to_string();
+        resultIndexado += numBinario;
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        cadenaModificada += resultIndexado + " FORMULA 1\n";  
     }
 }
 
