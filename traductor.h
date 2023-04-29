@@ -24,6 +24,8 @@ bool validarSistemaNumeracionOEtiqueta(string &subCadena, string &cadenaModifica
 bool validarIndexado(string &subCadena, string &cadenaModificada, string &numCodigo);
 void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice,int limite, string linea, string &cadenaModificada, string &dirMemoria);
 void formula1Indexado(string &subCadena,int valorIdx, string &cadenaModificada);
+void formula2Indexado(string &subCadena,int valorIdx, string &cadenaModificada);
+void formula3Indexado(string &subCadena,int valorIdx, string &cadenaModificada);
 void escribrirCodigoInstruccion(Tabcop tabcop[], int indice, string &cadenaModificada, string numCodigo);
 void rellenarCeros(string &dirMemoria, int espacios);
 
@@ -264,7 +266,7 @@ void buscarDireccionamiento(Tabcop tabcop[], string &subCadena, int indice, stri
                     memoria = stoi(dirMemoria,0,16);
                 }
                 else{
-                    cadenaModificada += linea+'\t'+dirMemoria+" "+"Fuera de rango\n";
+                    cadenaModificada += linea+'\t'+dirMemoria+" "+"FDR\n";
                 }
             }
             else{
@@ -335,7 +337,19 @@ void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice, i
     if (subCadena[0] == '['){
         for (int i = indice; i < limite; i++){
             if (tabcop[i].getDireccionamiento() == "IDX3"){
-                cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 3\n";
+                cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                posFinalDato = subCadena.find_first_of(delimitadorComa,0);
+                valorIdx = subCadena.substr(1,posFinalDato-1);
+                posIniDato = posFinalDato+1;
+                posFinalDato = subCadena.size();
+                valorFormIdx = subCadena.substr(posIniDato, posFinalDato -  posIniDato-1);
+                numIdx = stoi(valorIdx);
+                if (numIdx < 0){
+                    cadenaModificada += " FDR\n";
+                }
+                else{
+                    formula3Indexado(valorFormIdx,numIdx,cadenaModificada);
+                }
                 indice = i;
                 break;
             }
@@ -372,7 +386,10 @@ void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice, i
         else if (numIdx <= 255 && numIdx >= -256){
             for (int i = indice; i < limite; i++){
                 if (tabcop[i].getDireccionamiento() == "IDX1"){
-                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 2\n";
+                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                    posIniDato = posFinalDato+1;
+                    valorFormIdx = subCadena.substr(posIniDato, subCadena.size()-posIniDato);
+                    formula2Indexado(valorFormIdx,numIdx,cadenaModificada);
                     indice = i;
                     break;
                 }
@@ -381,7 +398,10 @@ void encontrarFormulaIndexado(Tabcop tabcop[], string &subCadena, int &indice, i
         else{
             for (int i = indice; i < limite; i++){
                 if (tabcop[i].getDireccionamiento() == "IDX2"){
-                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+" Es un Idexado FORMULA 2\n";
+                    cadenaModificada += linea+'\t'+dirMemoria+" "+tabcop[i].getCodigoInstruccion()+' ';
+                    posIniDato = posFinalDato+1;
+                    valorFormIdx = subCadena.substr(posIniDato, subCadena.size()-posIniDato);
+                    formula2Indexado(valorFormIdx,numIdx,cadenaModificada);
                     indice = i;
                     break;
                 }
@@ -400,7 +420,7 @@ void formula1Indexado(string &subCadena,int valorIdx, string &cadenaModificada){
         resultIndexado += numBinario;
         resultDecimal = stoi(resultIndexado,0,2);
         resultIndexado = decimalAHexa(resultDecimal);
-        cadenaModificada += resultIndexado + " FORMULA 1\n";
+        cadenaModificada += resultIndexado + "\tFORMULA 1\n";
     }
     else if (subCadena == "Y"){
         resultIndexado = "010";
@@ -409,7 +429,7 @@ void formula1Indexado(string &subCadena,int valorIdx, string &cadenaModificada){
         resultIndexado += numBinario;
         resultDecimal = stoi(resultIndexado,0,2);
         resultIndexado = decimalAHexa(resultDecimal);
-        cadenaModificada += resultIndexado + " FORMULA 1\n";
+        cadenaModificada += resultIndexado + "\tFORMULA 1\n";
     }
     else if (subCadena == "SP"){
         resultIndexado = "100";
@@ -418,7 +438,7 @@ void formula1Indexado(string &subCadena,int valorIdx, string &cadenaModificada){
         resultIndexado += numBinario;
         resultDecimal = stoi(resultIndexado,0,2);
         resultIndexado = decimalAHexa(resultDecimal);
-        cadenaModificada += resultIndexado + " FORMULA 1\n";   
+        cadenaModificada += resultIndexado + "\tFORMULA 1\n";   
     }
     else if (subCadena == "PC"){
         resultIndexado = "110";
@@ -427,7 +447,148 @@ void formula1Indexado(string &subCadena,int valorIdx, string &cadenaModificada){
         resultIndexado += numBinario;
         resultDecimal = stoi(resultIndexado,0,2);
         resultIndexado = decimalAHexa(resultDecimal);
-        cadenaModificada += resultIndexado + " FORMULA 1\n";  
+        cadenaModificada += resultIndexado + "\tFORMULA 1\n";  
+    }
+}
+void formula2Indexado(string &subCadena,int valorIdx, string &cadenaModificada){
+    string resultIndexado, numeroIdx, binCom2;
+    int resultDecimal;
+    if (subCadena == "X"){
+        resultIndexado = "111000";
+        if(valorIdx <= 255 && valorIdx >= -256){
+            resultIndexado += '0';
+            numeroIdx = decimalAHexa(valorIdx);
+        }
+        else{
+            resultIndexado += '1';
+            numeroIdx = decimalAHexa(valorIdx);
+            rellenarCeros(numeroIdx, 4);
+        }
+        if (valorIdx < 0){
+            resultIndexado += '1';
+            bitset<8> bs1(valorIdx);
+            binCom2 = bs1.to_string();
+            resultDecimal = stoi(binCom2,0,2);
+            resultIndexado = decimalAHexa(resultDecimal);
+        }
+        else{
+            resultIndexado += '0';
+        }
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        cadenaModificada += resultIndexado +  + "\tFORMULA 2\n";
+    }
+    else if (subCadena == "Y"){
+        resultIndexado = "111010";
+        if(valorIdx <= 255 && valorIdx >= -256){
+            resultIndexado += '0';
+            numeroIdx = decimalAHexa(valorIdx);
+        }
+        else{
+            resultIndexado += '1';
+            numeroIdx = decimalAHexa(valorIdx);
+            rellenarCeros(numeroIdx, 4);
+        }
+        if (valorIdx < 0){
+            resultIndexado += '1';
+            bitset<8> bs1(valorIdx);
+            binCom2 = bs1.to_string();
+            resultDecimal = stoi(binCom2,0,2);
+            resultIndexado = decimalAHexa(resultDecimal);
+        }
+        else{
+            resultIndexado += '0';
+        }
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        cadenaModificada += resultIndexado +  + "\tFORMULA 2\n";
+    }
+    else if (subCadena == "SP"){
+        resultIndexado = "111100";
+        if(valorIdx <= 255 && valorIdx >= -256){
+            resultIndexado += '0';
+            numeroIdx = decimalAHexa(valorIdx);
+        }
+        else{
+            resultIndexado += '1';
+            numeroIdx = decimalAHexa(valorIdx);
+            rellenarCeros(numeroIdx, 4);
+        }
+        if (valorIdx < 0){
+            resultIndexado += '1';
+            bitset<8> bs1(valorIdx);
+            binCom2 = bs1.to_string();
+            resultDecimal = stoi(binCom2,0,2);
+            resultIndexado = decimalAHexa(resultDecimal);
+        }
+        else{
+            resultIndexado += '0';
+        }
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        cadenaModificada += resultIndexado +  + "\tFORMULA 2\n";  
+    }
+    else if (subCadena == "PC"){
+        resultIndexado = "111110";
+        if(valorIdx <= 255 && valorIdx >= -256){
+            resultIndexado += '0';
+            numeroIdx = decimalAHexa(valorIdx);
+        }
+        else{
+            resultIndexado += '1';
+            numeroIdx = decimalAHexa(valorIdx);
+            rellenarCeros(numeroIdx, 4);
+        }
+        if (valorIdx < 0){
+            resultIndexado += '1';
+            bitset<8> bs1(valorIdx);
+            binCom2 = bs1.to_string();
+            resultDecimal = stoi(binCom2,0,2);
+            numeroIdx = decimalAHexa(resultDecimal);
+        }
+        else{
+            resultIndexado += '0';
+        }
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        cadenaModificada += resultIndexado + ' ' + numeroIdx + "\tFORMULA 2\n"; 
+    }
+}
+
+void formula3Indexado(string &subCadena,int valorIdx, string &cadenaModificada){
+    string resultIndexado, numeroIdx;
+    int resultDecimal;
+    if (subCadena == "X"){
+        resultIndexado = "11100011";
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        numeroIdx = decimalAHexa(valorIdx);
+        rellenarCeros(numeroIdx,4);
+        cadenaModificada += resultIndexado + ' ' + numeroIdx + "\tFORMULA 3\n"; 
+    }
+    else if (subCadena == "Y"){
+        resultIndexado = "11101011";
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        numeroIdx = decimalAHexa(valorIdx);
+        rellenarCeros(numeroIdx,4);
+        cadenaModificada += resultIndexado + ' ' + numeroIdx + "\tFORMULA 3\n"; 
+    }
+    else if (subCadena == "SP"){
+        resultIndexado = "11110011";
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        numeroIdx = decimalAHexa(valorIdx);
+        rellenarCeros(numeroIdx,4);
+        cadenaModificada += resultIndexado + ' ' + numeroIdx + "\tFORMULA 3\n";  
+    }
+    else if (subCadena == "PC"){
+        resultIndexado = "11111011";
+        resultDecimal = stoi(resultIndexado,0,2);
+        resultIndexado = decimalAHexa(resultDecimal);
+        numeroIdx = decimalAHexa(valorIdx);
+        rellenarCeros(numeroIdx,4);
+        cadenaModificada += resultIndexado + ' ' + numeroIdx + "\tFORMULA 3\n"; 
     }
 }
 
