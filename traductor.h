@@ -96,6 +96,7 @@ void leerLineas(Tabcop tabcop[], string &cadenaFinal){
                     resultadoRelativo = stoi(numBinario,0, 2);
                     codRelativo = decimalAHexa(resultadoRelativo);
                     cadenaModificada = cadenaMitadInicio + ' ' +codRelativo + cadenaMitadFinal;
+                    posFinalLinea = cadenaMitadInicio.size() + codRelativo.size() +1;
                 }
                 break;
             }
